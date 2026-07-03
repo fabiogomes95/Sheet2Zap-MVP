@@ -4,6 +4,27 @@ Vitrine mobile-first que lê os produtos de uma planilha do Google Sheets e
 finaliza o pedido enviando um resumo formatado para o WhatsApp da lojista.
 Sem banco de dados, sem painel admin, sem gateway de pagamento.
 
+## Prévia
+
+**Demonstração (mobile):**
+
+![Demonstração do fluxo](assets/demo.gif)
+
+**Desktop**
+
+| Vitrine | Filtro por categoria | Carrinho / checkout |
+|---------|----------------------|---------------------|
+| ![](assets/desktop-1-vitrine.png) | ![](assets/desktop-2-filtro-vestidos.png) | ![](assets/desktop-3-carrinho.png) |
+
+**Mobile**
+
+| Vitrine | Filtro por categoria | Carrinho / checkout |
+|---------|----------------------|---------------------|
+| ![](assets/mobile-1-vitrine.png) | ![](assets/mobile-2-filtro-vestidos.png) | ![](assets/mobile-3-carrinho.png) |
+
+> Imagens geradas por `generate_assets.py` (Playwright). Para regenerar:
+> `python generate_assets.py` com o servidor rodando em `localhost:8000`.
+
 ## Como funciona
 - **Produtos** = planilha do Google Sheets publicada como CSV (a lojista edita direto lá).
 - **Carrinho** = 100% no navegador (LocalStorage). Nada é salvo no servidor.
