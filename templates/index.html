@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ nome_loja }}</title>
+
+  <!-- Bootstrap 5 via CDN: zero build, mobile-first -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet" />
+
+  <style>
+    body { padding-bottom: 90px; background: #f7f7f9; }
+    .card-img-top { aspect-ratio: 1 / 1; object-fit: cover; background: #eee; }
+    .esgotado img { filter: grayscale(1); opacity: .55; }
+    .preco { font-weight: 700; color: #198754; }
+    /* Barra fixa do carrinho no rodapé */
+    .barra-carrinho {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid #dee2e6;
+      padding: .75rem 1rem; box-shadow: 0 -2px 10px rgba(0,0,0,.06);
+      z-index: 1030;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cabeçalho -->
+  <nav class="navbar bg-white shadow-sm sticky-top">
+    <div class="container">
+      <span class="navbar-brand fw-bold mb-0 h1">{{ nome_loja }}</span>
+      <span class="badge text-bg-success rounded-pill" id="contadorTopo">0 itens</span>
+    </div>
+  </nav>
+
+  <main class="container py-3">
+
+    {% if erro %}
+      <div class="alert alert-warning">{{ erro }}</div>
+    {% endif %}
+
+    {% if not produtos and not erro %}
+      <div class="alert alert-info">Nenhum produto cadastrado na planilha ainda.</div>
+    {% endif %}
+
+    <div class="row g-3">
+      {% for p in produtos %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card h-100 shadow-sm {% if p.esgotado %}esgotado{% endif %}">
+          <img class="card-img-top"
+               src="{{ p.foto or 'https://via.placeholder.com/400?text=Sem+foto' }}"
+               alt="{{ p.nome }}"
+               onerror="this.src='https://via.placeholder.com/400?text=Sem+foto'" />
+          <div class="card-body d-flex flex-column">
+            <h6 class="card-title mb-1">{{ p.nome }}</h6>
+            {% if p.tamanho %}
+              <small class="text-muted mb-1">Tam: {{ p.tamanho }}</small>
+            {% endif %}
+            <div class="preco mb-2">R$ {{ '%.2f'|format(p.preco)|replace('.', ',') }}</div>
+
+            <div class="mt-auto">
+              {% if p.esgotado %}
+                <button class="btn btn-secondary w-100" disabled>Esgotado</button>
+              {% else %}
+                <button
+                  class="btn btn-success w-100 btn-add"
+                  data-id="{{ p.id }}"
+                  data-nome="{{ p.nome }}"
+                  data-tamanho="{{ p.tamanho }}"
+                  data-preco="{{ p.preco }}">
+                  Adicionar
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <!-- Barra fixa do carrinho -->
+  <div class="barra-carrinho">
+    <div class="container d-flex align-items-center justify-content-between">
+      <div>
+        <strong id="totalBarra">R$ 0,00</strong>
+        <span class="text-muted ms-1" id="qtdBarra">(0 itens)</span>
+      </div>
+      <div>
+        <button class="btn btn-outline-secondary btn-sm"
+                data-bs-toggle="modal" data-bs-target="#modalCarrinho">
+          Ver carrinho
+        </button>
+        <button class="btn btn-success btn-sm" id="btnFinalizar" disabled>
+          Finalizar no WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal do carrinho -->
+  <div class="modal fade" id="modalCarrinho" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Seu carrinho</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="corpoCarrinho">
+          <p class="text-muted text-center my-4">Carrinho vazio.</p>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <strong id="totalModal">R$ 0,00</strong>
+          <div>
+            <button class="btn btn-outline-danger btn-sm" id="btnLimpar">Limpar</button>
+            <button class="btn btn-success btn-sm" id="btnFinalizarModal">
+              Finalizar no WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ==== Config vinda do backend ====
+    const WHATSAPP_LOJISTA = "{{ whatsapp_lojista }}";
+    const NOME_LOJA = "{{ nome_loja }}";
+    const CHAVE_PIX = "{{ chave_pix }}";
+    const STORAGE_KEY = "carrinho_" + NOME_LOJA;
+
+    // ==== Estado do carrinho (persistido em LocalStorage) ====
+    // Formato: { "<id>": { nome, tamanho, preco, qtd } }
+    let carrinho = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+    function salvar() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(carrinho));
+    }
+
+    const brl = (n) =>
+      "R$ " + n.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    function totais() {
+      let qtd = 0, total = 0;
+      for (const id in carrinho) {
+        qtd += carrinho[id].qtd;
+        total += carrinho[id].qtd * carrinho[id].preco;
+      }
+      return { qtd, total };
+    }
+
+    function addItem(btn) {
+      const id = btn.dataset.id;
+      if (!carrinho[id]) {
+        carrinho[id] = {
+          nome: btn.dataset.nome,
+          tamanho: btn.dataset.tamanho,
+          preco: parseFloat(btn.dataset.preco),
+          qtd: 0,
+        };
+      }
+      carrinho[id].qtd += 1;
+      salvar();
+      render();
+    }
+
+    function mudarQtd(id, delta) {
+      if (!carrinho[id]) return;
+      carrinho[id].qtd += delta;
+      if (carrinho[id].qtd <= 0) delete carrinho[id];
+      salvar();
+      render();
+    }
+
+    function limpar() {
+      carrinho = {};
+      salvar();
+      render();
+    }
+
+    // ==== Renderização ====
+    function render() {
+      const { qtd, total } = totais();
+
+      document.getElementById("contadorTopo").textContent = qtd + " itens";
+      document.getElementById("qtdBarra").textContent = "(" + qtd + " itens)";
+      document.getElementById("totalBarra").textContent = brl(total);
+      document.getElementById("totalModal").textContent = brl(total);
+
+      document.getElementById("btnFinalizar").disabled = qtd === 0;
+      document.getElementById("btnFinalizarModal").disabled = qtd === 0;
+
+      const corpo = document.getElementById("corpoCarrinho");
+      const ids = Object.keys(carrinho);
+      if (ids.length === 0) {
+        corpo.innerHTML =
+          '<p class="text-muted text-center my-4">Carrinho vazio.</p>';
+        return;
+      }
+
+      corpo.innerHTML = ids.map((id) => {
+        const it = carrinho[id];
+        const sub = brl(it.qtd * it.preco);
+        const tam = it.tamanho ? " • Tam " + it.tamanho : "";
+        return `
+          <div class="d-flex align-items-center justify-content-between border-bottom py-2">
+            <div class="me-2">
+              <div class="fw-semibold">${it.nome}</div>
+              <small class="text-muted">${brl(it.preco)}${tam}</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-sm btn-outline-secondary" data-menos="${id}">−</button>
+              <span>${it.qtd}</span>
+              <button class="btn btn-sm btn-outline-secondary" data-mais="${id}">+</button>
+              <span class="ms-2 fw-semibold" style="min-width:70px;text-align:right">${sub}</span>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    // ==== Monta a mensagem e abre o WhatsApp ====
+    function finalizar() {
+      const { qtd, total } = totais();
+      if (qtd === 0) return;
+
+      let msg = `Olá, ${NOME_LOJA}! Quero fazer um pedido:\n\n`;
+      for (const id in carrinho) {
+        const it = carrinho[id];
+        const tam = it.tamanho ? ` (Tam ${it.tamanho})` : "";
+        const sub = (it.qtd * it.preco).toFixed(2).replace(".", ",");
+        msg += `• ${it.qtd}x ${it.nome}${tam} — R$ ${sub}\n`;
+      }
+      msg += `\n*Total: ${brl(total)}*\n`;
+      if (CHAVE_PIX) {
+        msg += `\nPode me enviar a chave PIX para pagamento? 🙏`;
+      }
+
+      const url =
+        "https://wa.me/" + WHATSAPP_LOJISTA + "?text=" + encodeURIComponent(msg);
+      window.open(url, "_blank");
+    }
+
+    // ==== Eventos ====
+    document.querySelectorAll(".btn-add").forEach((btn) =>
+      btn.addEventListener("click", () => addItem(btn))
+    );
+    document.getElementById("corpoCarrinho").addEventListener("click", (e) => {
+      if (e.target.dataset.mais) mudarQtd(e.target.dataset.mais, +1);
+      if (e.target.dataset.menos) mudarQtd(e.target.dataset.menos, -1);
+    });
+    document.getElementById("btnLimpar").addEventListener("click", limpar);
+    document.getElementById("btnFinalizar").addEventListener("click", finalizar);
+    document.getElementById("btnFinalizarModal").addEventListener("click", finalizar);
+
+    // Primeira renderização (recupera carrinho salvo)
+    render();
+  </script>
+</body>
+</html>

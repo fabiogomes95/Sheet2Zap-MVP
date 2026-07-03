@@ -1,0 +1,22 @@
+# Blueprint do Render. Com este arquivo no repo, basta clicar em
+# "New +" -> "Blueprint" no dashboard do Render e apontar para o GitHub.
+services:
+  - type: web
+    name: loja-mvp
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SHEET_CSV_URL
+        sync: false          # preencha no dashboard (valor secreto por loja)
+      - key: WHATSAPP_LOJISTA
+        sync: false
+      - key: NOME_LOJA
+        value: Minha Loja
+      - key: CHAVE_PIX
+        sync: false
+      - key: CACHE_TTL
+        value: "60"
+      - key: PYTHON_VERSION
+        value: "3.12.4"
