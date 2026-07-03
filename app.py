@@ -134,11 +134,14 @@ def carregar_produtos():
         foto = converter_link_drive(foto)
         estoque = _to_int(linha.get("estoque", "0"))
 
+        categoria = linha.get("categoria") or "Outros"
+
         produtos.append(
             {
                 "id": i,
                 "nome": nome,
                 "foto": foto,
+                "categoria": categoria,
                 "tamanho": linha.get("tamanho", ""),
                 "preco": _to_float(linha.get("preco") or linha.get("preço", "0")),
                 "estoque": estoque,
@@ -160,9 +163,13 @@ def index():
         produtos = []
         erro = f"Não consegui ler a planilha: {exc}"
 
+    # Lista de categorias na ordem em que aparecem na planilha (sem repetir).
+    categorias = list(dict.fromkeys(p["categoria"] for p in produtos))
+
     return render_template(
         "index.html",
         produtos=produtos,
+        categorias=categorias,
         erro=erro,
         nome_loja=NOME_LOJA,
         whatsapp_lojista=WHATSAPP_LOJISTA,

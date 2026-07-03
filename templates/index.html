@@ -5,116 +5,251 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ nome_loja }}</title>
 
-  <!-- Bootstrap 5 via CDN: zero build, mobile-first -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet" />
+  <!-- Bootstrap só para o modal e a grid -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Tipografia de boutique -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
 
   <style>
-    body { padding-bottom: 90px; background: #f7f7f9; }
-    .card-img-top { aspect-ratio: 1 / 1; object-fit: cover; background: #eee; }
-    .esgotado img { filter: grayscale(1); opacity: .55; }
-    .preco { font-weight: 700; color: #198754; }
-    /* Barra fixa do carrinho no rodapé */
-    .barra-carrinho {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: #fff; border-top: 1px solid #dee2e6;
-      padding: .75rem 1rem; box-shadow: 0 -2px 10px rgba(0,0,0,.06);
-      z-index: 1030;
+    :root {
+      --rose: #b06a7d;
+      --rose-dark: #8f4f61;
+      --rose-soft: #f4e9ec;
+      --ink: #2b2226;
+      --muted: #8a7f84;
+      --bg: #faf6f4;
+      --wa: #25d366;
+      --wa-dark: #1da851;
+      --shadow: 0 10px 30px -12px rgba(80, 40, 55, .25);
     }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding-bottom: 92px;
+      margin: 0;
+    }
+    h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
+
+    /* ---------- Header ---------- */
+    .hero {
+      background: linear-gradient(135deg, #b06a7d 0%, #8f4f61 55%, #6f3b4c 100%);
+      color: #fff;
+      padding: 2.1rem 1rem 1.4rem;
+      text-align: center;
+      position: relative;
+    }
+    .hero h1 { font-size: 2rem; margin: 0; letter-spacing: .5px; }
+    .hero p { margin: .35rem 0 0; opacity: .85; font-size: .9rem; font-weight: 300; }
+    .hero-cart {
+      position: absolute; top: 1rem; right: 1rem;
+      background: rgba(255,255,255,.15); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,.25);
+      color: #fff; border-radius: 999px; padding: .4rem .8rem;
+      font-size: .82rem; font-weight: 600; display: inline-flex; align-items: center; gap: .35rem;
+    }
+    .hero-cart .dot {
+      background: #fff; color: var(--rose-dark); border-radius: 999px;
+      min-width: 20px; height: 20px; display: inline-flex; align-items: center;
+      justify-content: center; font-size: .72rem; font-weight: 700;
+    }
+
+    /* ---------- Filtro de categorias ---------- */
+    .filtros {
+      position: sticky; top: 0; z-index: 1020;
+      background: rgba(250,246,244,.92); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #eaddE0;
+      padding: .7rem 0;
+    }
+    .chips {
+      display: flex; gap: .5rem; overflow-x: auto; padding: 0 1rem;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      white-space: nowrap; border: 1.5px solid var(--rose);
+      color: var(--rose-dark); background: transparent;
+      border-radius: 999px; padding: .4rem 1rem; font-size: .84rem;
+      font-weight: 600; cursor: pointer; transition: all .18s ease;
+    }
+    .chip:hover { background: var(--rose-soft); }
+    .chip.ativo { background: var(--rose); color: #fff; box-shadow: 0 4px 12px -4px var(--rose); }
+
+    /* ---------- Cards ---------- */
+    .grade { padding: 1.1rem; }
+    .produto {
+      background: #fff; border-radius: 18px; overflow: hidden;
+      box-shadow: var(--shadow); height: 100%;
+      display: flex; flex-direction: column;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .produto:hover { transform: translateY(-5px); box-shadow: 0 18px 40px -14px rgba(80,40,55,.35); }
+    .foto-wrap { position: relative; aspect-ratio: 3/4; overflow: hidden; background: #ece4e6; }
+    .foto-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
+    .produto:hover .foto-wrap img { transform: scale(1.06); }
+    .tag-cat {
+      position: absolute; top: .6rem; left: .6rem;
+      background: rgba(255,255,255,.9); color: var(--rose-dark);
+      font-size: .68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; padding: .22rem .6rem; border-radius: 999px;
+    }
+    .esgotado-overlay {
+      position: absolute; inset: 0; background: rgba(43,34,38,.45);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .esgotado-overlay span {
+      background: #fff; color: var(--ink); font-weight: 700;
+      font-size: .8rem; letter-spacing: 1px; text-transform: uppercase;
+      padding: .4rem 1rem; border-radius: 999px;
+    }
+    .esgotado .foto-wrap img { filter: grayscale(.9); }
+    .corpo { padding: .85rem .9rem 1rem; display: flex; flex-direction: column; flex: 1; }
+    .corpo .nome { font-weight: 600; font-size: .98rem; line-height: 1.25; }
+    .corpo .tam { color: var(--muted); font-size: .78rem; margin-top: .15rem; }
+    .preco { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--rose-dark); margin: .5rem 0 .7rem; }
+    .btn-add {
+      margin-top: auto; border: none; border-radius: 12px;
+      background: var(--rose); color: #fff; font-weight: 600;
+      padding: .6rem; font-size: .9rem; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+      transition: background .18s ease;
+    }
+    .btn-add:hover { background: var(--rose-dark); }
+    .btn-add:disabled { background: #d8ccce; color: #fff; cursor: not-allowed; }
+
+    /* ---------- Barra fixa ---------- */
+    .barra {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030;
+      background: #fff; border-top: 1px solid #eaddE0;
+      box-shadow: 0 -6px 24px -12px rgba(80,40,55,.3);
+      padding: .7rem 1rem;
+      display: flex; align-items: center; justify-content: space-between; gap: .6rem;
+    }
+    .barra .tot .val { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; }
+    .barra .tot small { color: var(--muted); display: block; font-size: .74rem; }
+    .btn-wa {
+      border: none; border-radius: 12px; background: var(--wa); color: #fff;
+      font-weight: 700; padding: .7rem 1.1rem; font-size: .92rem; cursor: pointer;
+      display: inline-flex; align-items: center; gap: .45rem; transition: background .18s ease;
+    }
+    .btn-wa:hover { background: var(--wa-dark); }
+    .btn-wa:disabled { background: #cfcfcf; cursor: not-allowed; }
+    .btn-ghost {
+      border: 1.5px solid #e0d3d6; background: #fff; color: var(--rose-dark);
+      border-radius: 12px; font-weight: 600; padding: .7rem .9rem; font-size: .88rem; cursor: pointer;
+    }
+
+    /* ---------- Modal ---------- */
+    .modal-content { border: none; border-radius: 20px; }
+    .modal-title { font-family: 'Playfair Display', serif; }
+    .item-cart { display: flex; align-items: center; justify-content: space-between; padding: .7rem 0; border-bottom: 1px solid #f0e7ea; }
+    .qtd-ctrl button { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid #e0d3d6; background: #fff; color: var(--rose-dark); font-weight: 700; cursor: pointer; }
+    .qtd-ctrl { display: flex; align-items: center; gap: .5rem; }
+
+    @media (max-width: 400px) { .hero h1 { font-size: 1.7rem; } }
   </style>
 </head>
 <body>
 
   <!-- Cabeçalho -->
-  <nav class="navbar bg-white shadow-sm sticky-top">
-    <div class="container">
-      <span class="navbar-brand fw-bold mb-0 h1">{{ nome_loja }}</span>
-      <span class="badge text-bg-success rounded-pill" id="contadorTopo">0 itens</span>
+  <header class="hero">
+    <div class="hero-cart" data-bs-toggle="modal" data-bs-target="#modalCarrinho" style="cursor:pointer">
+      🛍️ <span class="dot" id="contadorTopo">0</span>
+    </div>
+    <h1>{{ nome_loja }}</h1>
+    <p>Peças selecionadas • Envio rápido pelo WhatsApp</p>
+  </header>
+
+  <!-- Filtro de categorias -->
+  <nav class="filtros">
+    <div class="chips" id="chips">
+      <button class="chip ativo" data-cat="todos">Todos</button>
+      {% for c in categorias %}
+        <button class="chip" data-cat="{{ c }}">{{ c }}</button>
+      {% endfor %}
     </div>
   </nav>
 
-  <main class="container py-3">
-
+  <main class="grade">
     {% if erro %}
       <div class="alert alert-warning">{{ erro }}</div>
     {% endif %}
-
     {% if not produtos and not erro %}
       <div class="alert alert-info">Nenhum produto cadastrado na planilha ainda.</div>
     {% endif %}
 
-    <div class="row g-3">
+    <div class="row g-3" id="listaProdutos">
       {% for p in produtos %}
-      <div class="col-6 col-md-4 col-lg-3">
-        <div class="card h-100 shadow-sm {% if p.esgotado %}esgotado{% endif %}">
-          <img class="card-img-top"
-               src="{{ p.foto or 'https://via.placeholder.com/400?text=Sem+foto' }}"
-               alt="{{ p.nome }}"
-               onerror="this.src='https://via.placeholder.com/400?text=Sem+foto'" />
-          <div class="card-body d-flex flex-column">
-            <h6 class="card-title mb-1">{{ p.nome }}</h6>
-            {% if p.tamanho %}
-              <small class="text-muted mb-1">Tam: {{ p.tamanho }}</small>
+      <div class="col-6 col-md-4 col-lg-3 item-produto" data-cat="{{ p.categoria }}">
+        <div class="produto {% if p.esgotado %}esgotado{% endif %}">
+          <div class="foto-wrap">
+            <span class="tag-cat">{{ p.categoria }}</span>
+            <img src="{{ p.foto or 'https://via.placeholder.com/400x533?text=Sem+foto' }}"
+                 alt="{{ p.nome }}" loading="lazy"
+                 onerror="this.src='https://via.placeholder.com/400x533?text=Sem+foto'" />
+            {% if p.esgotado %}<div class="esgotado-overlay"><span>Esgotado</span></div>{% endif %}
+          </div>
+          <div class="corpo">
+            <div class="nome">{{ p.nome }}</div>
+            {% if p.tamanho %}<div class="tam">Tamanho {{ p.tamanho }}</div>{% endif %}
+            <div class="preco">R$ {{ '%.2f'|format(p.preco)|replace('.', ',') }}</div>
+            {% if p.esgotado %}
+              <button class="btn-add" disabled>Indisponível</button>
+            {% else %}
+              <button class="btn-add"
+                      data-id="{{ p.id }}" data-nome="{{ p.nome }}"
+                      data-tamanho="{{ p.tamanho }}" data-preco="{{ p.preco }}">
+                🛒 Adicionar
+              </button>
             {% endif %}
-            <div class="preco mb-2">R$ {{ '%.2f'|format(p.preco)|replace('.', ',') }}</div>
-
-            <div class="mt-auto">
-              {% if p.esgotado %}
-                <button class="btn btn-secondary w-100" disabled>Esgotado</button>
-              {% else %}
-                <button
-                  class="btn btn-success w-100 btn-add"
-                  data-id="{{ p.id }}"
-                  data-nome="{{ p.nome }}"
-                  data-tamanho="{{ p.tamanho }}"
-                  data-preco="{{ p.preco }}">
-                  Adicionar
-                </button>
-              {% endif %}
-            </div>
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
+
+    <p id="vazioFiltro" class="text-center text-muted py-5" style="display:none">
+      Nenhum produto nesta categoria.
+    </p>
   </main>
 
-  <!-- Barra fixa do carrinho -->
-  <div class="barra-carrinho">
-    <div class="container d-flex align-items-center justify-content-between">
-      <div>
-        <strong id="totalBarra">R$ 0,00</strong>
-        <span class="text-muted ms-1" id="qtdBarra">(0 itens)</span>
-      </div>
-      <div>
-        <button class="btn btn-outline-secondary btn-sm"
-                data-bs-toggle="modal" data-bs-target="#modalCarrinho">
-          Ver carrinho
-        </button>
-        <button class="btn btn-success btn-sm" id="btnFinalizar" disabled>
-          Finalizar no WhatsApp
-        </button>
-      </div>
+  <!-- Barra fixa -->
+  <div class="barra">
+    <div class="tot">
+      <span class="val" id="totalBarra">R$ 0,00</span>
+      <small id="qtdBarra">carrinho vazio</small>
+    </div>
+    <div style="display:flex; gap:.5rem">
+      <button class="btn-ghost" data-bs-toggle="modal" data-bs-target="#modalCarrinho">Ver</button>
+      <button class="btn-wa" id="btnFinalizar" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-1.7-.8-2.8-1.5-3.9-3.4-.3-.5.3-.5.8-1.5.1-.2 0-.4 0-.5C10 8.6 9.5 7.4 9.3 6.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.7.7-1 1.6-1 2.6 0 1.6 1.1 3.1 1.3 3.4.2.3 2.3 3.5 5.6 4.9 2.1.9 2.9.9 3.9.8.6-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.4 1.3 4.9L2 22l5.3-1.4C8.7 21.5 10.3 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+        Finalizar
+      </button>
     </div>
   </div>
 
   <!-- Modal do carrinho -->
   <div class="modal fade" id="modalCarrinho" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header border-0">
           <h5 class="modal-title">Seu carrinho</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body" id="corpoCarrinho">
-          <p class="text-muted text-center my-4">Carrinho vazio.</p>
+        <div class="modal-body pt-0" id="corpoCarrinho">
+          <p class="text-muted text-center my-4">Seu carrinho está vazio.</p>
         </div>
-        <div class="modal-footer justify-content-between">
-          <strong id="totalModal">R$ 0,00</strong>
-          <div>
-            <button class="btn btn-outline-danger btn-sm" id="btnLimpar">Limpar</button>
-            <button class="btn btn-success btn-sm" id="btnFinalizarModal">
+        <div class="modal-footer border-0 flex-column align-items-stretch gap-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted">Total</span>
+            <strong class="serif" style="font-size:1.4rem" id="totalModal">R$ 0,00</strong>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn-ghost flex-grow-0" id="btnLimpar">Limpar</button>
+            <button class="btn-wa flex-grow-1 justify-content-center" id="btnFinalizarModal" disabled>
               Finalizar no WhatsApp
             </button>
           </div>
@@ -125,136 +260,101 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // ==== Config vinda do backend ====
     const WHATSAPP_LOJISTA = "{{ whatsapp_lojista }}";
     const NOME_LOJA = "{{ nome_loja }}";
     const CHAVE_PIX = "{{ chave_pix }}";
     const STORAGE_KEY = "carrinho_" + NOME_LOJA;
 
-    // ==== Estado do carrinho (persistido em LocalStorage) ====
-    // Formato: { "<id>": { nome, tamanho, preco, qtd } }
     let carrinho = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-
-    function salvar() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(carrinho));
-    }
-
-    const brl = (n) =>
-      "R$ " + n.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    const salvar = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(carrinho));
+    const brl = (n) => "R$ " + n.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
     function totais() {
       let qtd = 0, total = 0;
-      for (const id in carrinho) {
-        qtd += carrinho[id].qtd;
-        total += carrinho[id].qtd * carrinho[id].preco;
-      }
+      for (const id in carrinho) { qtd += carrinho[id].qtd; total += carrinho[id].qtd * carrinho[id].preco; }
       return { qtd, total };
     }
 
     function addItem(btn) {
       const id = btn.dataset.id;
-      if (!carrinho[id]) {
-        carrinho[id] = {
-          nome: btn.dataset.nome,
-          tamanho: btn.dataset.tamanho,
-          preco: parseFloat(btn.dataset.preco),
-          qtd: 0,
-        };
-      }
+      if (!carrinho[id]) carrinho[id] = { nome: btn.dataset.nome, tamanho: btn.dataset.tamanho, preco: parseFloat(btn.dataset.preco), qtd: 0 };
       carrinho[id].qtd += 1;
-      salvar();
-      render();
+      salvar(); render();
     }
-
-    function mudarQtd(id, delta) {
+    function mudarQtd(id, d) {
       if (!carrinho[id]) return;
-      carrinho[id].qtd += delta;
+      carrinho[id].qtd += d;
       if (carrinho[id].qtd <= 0) delete carrinho[id];
-      salvar();
-      render();
+      salvar(); render();
     }
+    function limpar() { carrinho = {}; salvar(); render(); }
 
-    function limpar() {
-      carrinho = {};
-      salvar();
-      render();
-    }
-
-    // ==== Renderização ====
     function render() {
       const { qtd, total } = totais();
-
-      document.getElementById("contadorTopo").textContent = qtd + " itens";
-      document.getElementById("qtdBarra").textContent = "(" + qtd + " itens)";
+      document.getElementById("contadorTopo").textContent = qtd;
       document.getElementById("totalBarra").textContent = brl(total);
+      document.getElementById("qtdBarra").textContent = qtd === 0 ? "carrinho vazio" : qtd + (qtd === 1 ? " item" : " itens");
       document.getElementById("totalModal").textContent = brl(total);
-
       document.getElementById("btnFinalizar").disabled = qtd === 0;
       document.getElementById("btnFinalizarModal").disabled = qtd === 0;
 
       const corpo = document.getElementById("corpoCarrinho");
       const ids = Object.keys(carrinho);
-      if (ids.length === 0) {
-        corpo.innerHTML =
-          '<p class="text-muted text-center my-4">Carrinho vazio.</p>';
-        return;
-      }
-
+      if (!ids.length) { corpo.innerHTML = '<p class="text-muted text-center my-4">Seu carrinho está vazio.</p>'; return; }
       corpo.innerHTML = ids.map((id) => {
         const it = carrinho[id];
-        const sub = brl(it.qtd * it.preco);
         const tam = it.tamanho ? " • Tam " + it.tamanho : "";
-        return `
-          <div class="d-flex align-items-center justify-content-between border-bottom py-2">
-            <div class="me-2">
-              <div class="fw-semibold">${it.nome}</div>
-              <small class="text-muted">${brl(it.preco)}${tam}</small>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <button class="btn btn-sm btn-outline-secondary" data-menos="${id}">−</button>
-              <span>${it.qtd}</span>
-              <button class="btn btn-sm btn-outline-secondary" data-mais="${id}">+</button>
-              <span class="ms-2 fw-semibold" style="min-width:70px;text-align:right">${sub}</span>
-            </div>
-          </div>`;
+        return `<div class="item-cart">
+            <div class="me-2"><div style="font-weight:600">${it.nome}</div>
+              <small class="text-muted">${brl(it.preco)}${tam}</small></div>
+            <div class="qtd-ctrl">
+              <button data-menos="${id}">−</button><span>${it.qtd}</span><button data-mais="${id}">+</button>
+              <strong class="ms-2" style="min-width:74px;text-align:right">${brl(it.qtd*it.preco)}</strong>
+            </div></div>`;
       }).join("");
     }
 
-    // ==== Monta a mensagem e abre o WhatsApp ====
     function finalizar() {
       const { qtd, total } = totais();
-      if (qtd === 0) return;
-
+      if (!qtd) return;
       let msg = `Olá, ${NOME_LOJA}! Quero fazer um pedido:\n\n`;
       for (const id in carrinho) {
         const it = carrinho[id];
         const tam = it.tamanho ? ` (Tam ${it.tamanho})` : "";
-        const sub = (it.qtd * it.preco).toFixed(2).replace(".", ",");
-        msg += `• ${it.qtd}x ${it.nome}${tam} — R$ ${sub}\n`;
+        msg += `• ${it.qtd}x ${it.nome}${tam} — ${brl(it.qtd*it.preco)}\n`;
       }
       msg += `\n*Total: ${brl(total)}*\n`;
-      if (CHAVE_PIX) {
-        msg += `\nPode me enviar a chave PIX para pagamento? 🙏`;
-      }
-
-      const url =
-        "https://wa.me/" + WHATSAPP_LOJISTA + "?text=" + encodeURIComponent(msg);
-      window.open(url, "_blank");
+      if (CHAVE_PIX) msg += `\nPode me enviar a chave PIX para pagamento? 🙏`;
+      window.open("https://wa.me/" + WHATSAPP_LOJISTA + "?text=" + encodeURIComponent(msg), "_blank");
     }
 
-    // ==== Eventos ====
-    document.querySelectorAll(".btn-add").forEach((btn) =>
-      btn.addEventListener("click", () => addItem(btn))
-    );
+    // ---- Filtro de categorias ----
+    function filtrar(cat) {
+      let visiveis = 0;
+      document.querySelectorAll(".item-produto").forEach((el) => {
+        const ok = cat === "todos" || el.dataset.cat === cat;
+        el.style.display = ok ? "" : "none";
+        if (ok) visiveis++;
+      });
+      document.getElementById("vazioFiltro").style.display = visiveis ? "none" : "block";
+    }
+
+    // ---- Eventos ----
+    document.querySelectorAll(".btn-add").forEach((b) => b.addEventListener("click", () => addItem(b)));
     document.getElementById("corpoCarrinho").addEventListener("click", (e) => {
       if (e.target.dataset.mais) mudarQtd(e.target.dataset.mais, +1);
       if (e.target.dataset.menos) mudarQtd(e.target.dataset.menos, -1);
+    });
+    document.getElementById("chips").addEventListener("click", (e) => {
+      if (!e.target.classList.contains("chip")) return;
+      document.querySelectorAll(".chip").forEach((c) => c.classList.remove("ativo"));
+      e.target.classList.add("ativo");
+      filtrar(e.target.dataset.cat);
     });
     document.getElementById("btnLimpar").addEventListener("click", limpar);
     document.getElementById("btnFinalizar").addEventListener("click", finalizar);
     document.getElementById("btnFinalizarModal").addEventListener("click", finalizar);
 
-    // Primeira renderização (recupera carrinho salvo)
     render();
   </script>
 </body>

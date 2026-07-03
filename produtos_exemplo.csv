@@ -1,9 +1,13 @@
-Nome,Foto URL,Tamanho,Preco,Estoque
-Vestido Floral Midi,https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600,M,"189,90",4
-Bolsa de Palha Artesanal,https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600,Único,"120,00",2
-Camisa Linho Off-White,https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600,G,"149,90",0
-Saia Jeans Clochard,https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600,38,"99,90",7
-Tênis Branco Casual,https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600,37,"229,00",3
-Óculos de Sol Redondo,https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600,Único,"79,90",0
-Chapéu de Palha,https://images.unsplash.com/photo-1521369909029-2afed882baee?w=600,Único,"89,00",5
-Colar Dourado Delicado,https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600,Único,"45,50",10
+Nome,Foto URL,Categoria,Tamanho,Preco,Estoque
+Vestido Floral Midi,https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600,Vestidos,M,"189,90",4
+Vestido Longo de Festa,https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600,Vestidos,P,"289,90",2
+Bolsa de Palha Artesanal,https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600,Bolsas,Único,"120,00",2
+Bolsa Tiracolo de Couro,https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600,Bolsas,Único,"210,00",0
+Camisa Linho Off-White,https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600,Roupas,G,"149,90",0
+Saia Jeans Clochard,https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=600,Roupas,38,"99,90",7
+Blusa Cropped Canelada,https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=600,Roupas,M,"69,90",9
+Tênis Branco Casual,https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600,Calçados,37,"229,00",3
+Sandália Rasteira Trançada,https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600,Calçados,36,"129,90",5
+Óculos de Sol Redondo,https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600,Acessórios,Único,"79,90",0
+Chapéu de Palha,https://images.unsplash.com/photo-1521369909029-2afed882baee?w=600,Acessórios,Único,"89,00",5
+Colar Dourado Delicado,https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600,Acessórios,Único,"45,50",10
