@@ -2,7 +2,7 @@
 # "New +" -> "Blueprint" no dashboard do Render e apontar para o GitHub.
 services:
   - type: web
-    name: loja-mvp
+    name: lrbrand
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
